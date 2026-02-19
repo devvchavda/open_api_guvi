@@ -1,0 +1,110 @@
+So here is the reference documents I have provided to you . 
+Consider looking them  
+You should only look at problem statement 2 in the Ai for fraud detection and user safety document . 
+The second document uploaded is about evaluation , how our endpoint is been evaluated . Read it carefully to design 
+an optimal solution . Try to maximise the score we can maximize in the solution. 
+Problem : Build an agentic honeypot scam detection and engagement system , that engages with the scammer and extracts out 
+the crucial details about him . 
+Goal : To make a working and excellent production ready and scalable solution for problem statement 2  . 
+What to build : 
+So basically we have to build a endpoint (let say /analyze) which takes the request (given below) and sends a corresponding response (given below) 
+request : 
+{
+“sessionId”: “wertyu-dfghj-ertyui”,
+  "message": {
+    "sender": "scammer",
+    "text": "Share your UPI ID to avoid account suspension.",
+    "timestamp": 1770005528731
+  },
+  "conversationHistory": [
+    {
+      "sender": "scammer",
+      "text": "Your bank account will be blocked today. Verify immediately.",
+      "timestamp": 1770005528731
+    },
+    {
+      "sender": "user",
+      "text": "Why will my account be blocked?",
+      "timestamp": 1770005528731
+    }
+  ],
+  "metadata": {
+    "channel": "SMS",
+    "language": "English",
+    "locale": "IN"
+  }
+}
+6.3 Request Body Field Explanation
+message (Required)
+The latest incoming message in the conversation.
+Field
+Description
+sender
+scammer or user
+text
+Message content
+timestamp
+Epoch time format in ms
+
+conversationHistory (Optional)
+All previous messages in the same conversation.
+Empty array ([]) for first message
+Required for follow-up messages
+
+metadata (Optional but Recommended)
+Field
+Description
+channel
+SMS / WhatsApp / Email / Chat
+language
+Language used
+locale
+Country or region 
+The response given by the api should be like .... 
+{
+  "status": "success",
+  "reply": "Why is my account being suspended?"
+}
+Ok so maximum number of turns basically are 10. We should basically send the result to callback endpoint before 10 turns are reached . 
+So we have to gather a nice payload (format given below) , to the respective endpoint (specified below) . 
+THE MARKS OBTAINED ARE GENUINELY ON THE BASIS OF THIS , SO WE HAVE TO USE THIS MAXIMUM WE CAN USE. 
+The payload mentioned in the documents is generally wrong they maded a mistake due to which hackathon for honeypot people is rescheduled... 
+THis is how final output or payload should be like .... 
+{ 
+"status": "success", 
+"scamDetected": true, 
+"scamType": "bank_fraud", 
+"extractedIntelligence": { 
+"phoneNumbers": ["+91-9876543210"], 
+"bankAccounts": ["1234567890123456"], 
+"upiIds": ["scammer.fraud@fakebank"], 
+"phishingLinks": ["http://malicious-site.com"], 
+"emailAddresses": ["scammer@fake.com"] 
+}, 
+"engagementMetrics": { 
+"totalMessagesExchanged": 8, 
+"engagementDurationSeconds": 120 
+}, 
+"agentNotes": "Scammer claimed to be from SBI fraud department, 
+provided fake ID..." 
+}  
+Final result callback ... 
+https://hackathon.guvi.in/api/updateHoneyPotFinalResult
+//example code to send ... 
+response = requests.post(
+    "https://hackathon.guvi.in/api/updateHoneyPotFinalResult",
+    json=payload,
+    timeout=5
+)
+This is all about the problem we need to solve. 
+Instructions to be considered : 
+Use langchain and langgraph for the solution . 
+Use fast api and (asynchronous code) for endpoints . 
+Now write the code modular so basically if i have to change one component or something i dont have to chnaage 10 lines or 10 different places for llms and all. 
+Ok so system which i am planning ... 
+I am planning that when the conversation history and the message comes pass it to the llm with the honeypot prompt (use empassant learning) that is make three llm calls with same system prompt and different type of excuses , then gather structured output (which contains response + payload) , union the payload (among all three agents) and select the response of that agent which had the max payload details . This is my plan introduce yours if you feel better for hackathon which is more good ?
+Remember we have to be optimal , we should only ask questions which we need in the payload , irrespective of the things we dont need. The system prompt should be dynamic per turn instructing the agents for what we need now . And directing for some newer excuses to gather those fields . 
+Ask questions at any time if needed. 
+
+I think for extraction , we dont need the llm parsing , the regex will be sufficient . SO llm only has to generate a reply . 
+SO use robust regex for it. Now also do we need 3 llms ? If not dont use it . 
